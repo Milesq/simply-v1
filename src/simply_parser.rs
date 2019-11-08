@@ -1,5 +1,10 @@
 use std::{fs::File, io::Read, path::Path};
 
+mod ast;
+mod ast_elements;
+
+use ast_elements::*;
+
 pub fn parse_file<'a>(path: String) -> Result<(), &'a str> {
     if !Path::new(&path).exists() {
         return Err("File doesn't exists");
@@ -13,5 +18,7 @@ pub fn parse_file<'a>(path: String) -> Result<(), &'a str> {
 }
 
 pub fn parse_simply(code: String) {
-    println!("{}", code);
+    let _program = ast::build_ast(code);
+
+    // print!("{:?}", program);
 }
