@@ -1,4 +1,4 @@
-use super::AstTree;
+use super::{AstTree, SimplyElement, SimplyLiteralElement, SimplyValue};
 use base64::encode;
 
 fn hash_literals(s: &mut String) {
@@ -38,9 +38,43 @@ fn hash_literals(s: &mut String) {
     }
 }
 
-pub fn build_ast(mut raw: String) -> AstTree {
-    hash_literals(&mut raw);
-    println!("{}", raw);
+fn split(code: String) -> Vec<String> {
+    let mut ret = Vec::new();
+    let mut tmp = String::new();
 
-    vec![]
+    let mut in_literal = false;
+
+    let is_alpha = |chr: &char| (*chr >= 'a' && *chr <= 'z') || (*chr >= 'A' && *chr <= 'Z');
+
+    for chr in code.chars() {
+        if chr == '"' {
+            in_literal = !in_literal;
+        }
+
+        if is_alpha(&chr) || in_literal || chr == '"' {
+            tmp.push(chr);
+        } else {
+            ret.push(tmp);
+            ret.push(format!("{}", chr));
+            tmp = String::new();
+        }
+    }
+
+    ret.into_iter()
+        .filter(|ref x| x.trim().len() > 0)
+        .collect::<Vec<String>>()
+}
+
+pub fn build_ast(mut code: String) -> AstTree {
+    hash_literals(&mut code);
+    let mut ast = Vec::new();
+
+    for expr in split(code).iter() {
+        ast.push(match expr.as_str() {
+            "func" => SimplyElement::FuncDec(String::from("okok")),
+            _ => SimplyElement::VariableDeclaration(String::from("ok")),
+        });
+    }
+
+    ast
 }
