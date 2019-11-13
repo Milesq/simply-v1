@@ -1,4 +1,7 @@
-use super::{AstTree, SimplyElement, SimplyLiteralElement, SimplyValue};
+use super::{
+    AstTree, SimplyElement as El, SimplyElements, SimplyLiteralElement as Literal,
+    SimplyValue as Val,
+};
 use base64::encode;
 
 fn hash_literals(s: &mut String) {
@@ -69,12 +72,68 @@ pub fn build_ast(mut code: String) -> AstTree {
     hash_literals(&mut code);
     let mut ast = Vec::new();
 
+    let mut action: Option<fn(&String, &SimplyElements) -> (El, bool)> = None;
+    let mut buffer: SimplyElements = Vec::new();
+
     for expr in split(code).iter() {
-        ast.push(match expr.as_str() {
-            "func" => SimplyElement::FuncDec(String::from("okok")),
-            _ => SimplyElement::VariableDeclaration(String::from("ok")),
-        });
+        if let Some(func) = action {
+            let (ast_element, ended) = func(expr, &buffer);
+
+            if !ended {
+                buffer.push(ast_element);
+            } else {
+                for el in buffer {
+                    ast.push(el);
+                }
+
+                ast.push(ast_element);
+                action = None;
+                buffer = Vec::new();
+            }
+        } else {
+            ast.push(match expr.as_str() {
+                "func" => {
+                    action = Some(|func_name, _| (El::FuncDec(func_name.to_string()), true));
+                    continue;
+                }
+                "let" => {
+                    action =
+                        Some(|var_name, _| (El::VariableDeclaration(var_name.to_string()), true));
+                    continue;
+                }
+                "if" => {
+                    action = Some(|condition, _| (El::IfStatement(condition.to_string()), true));
+                    continue;
+                }
+                "{" => El::OpeningBracket,
+                "}" => El::ClosingBracket,
+                "(" => {
+                    action = Some(|val, prevs| {
+                        if val == ")" {
+                            let filtered = prevs
+                                .iter()
+                                .filter(|el| {
+                                    if let El::Identifier(Val::Variable(name)) = el {
+                                        name != ","
+                                    } else {
+                                        true
+                                    }
+                                })
+                                .collect::<Vec<&El>>();
+                            (El::FuncInvocation(filtered), true)
+                        } else {
+                            (El::Identifier(Val::Variable(val.into())), val == ")")
+                        }
+                    });
+
+                    continue;
+                }
+                _ => El::Identifier(Val::Variable(expr.into())),
+            });
+        }
     }
+
+    // println!("{:#?}", ast);
 
     ast
 }

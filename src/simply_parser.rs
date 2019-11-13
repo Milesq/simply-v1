@@ -18,7 +18,5 @@ pub fn parse_file<'a>(path: String) -> Result<(), &'a str> {
 }
 
 pub fn parse_simply(code: String) {
-    let _program = ast::build_ast(code);
-
-    // print!("{:?}", program);
+    ast::build_ast(code);
 }

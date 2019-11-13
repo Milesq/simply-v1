@@ -6,4 +6,8 @@ let x = 3
 
 show(x)
 
-println("Hello, World")
+if x > 2 {
+    print("x is greater than two")
+}
+
+print("Hello, World")
