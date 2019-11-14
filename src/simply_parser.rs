@@ -2,21 +2,25 @@ use std::{fs::File, io::Read, path::Path};
 
 mod ast;
 mod ast_elements;
+mod parse_err;
 
 use ast_elements::*;
+use parse_err::ParseErr;
 
-pub fn parse_file<'a>(path: String) -> Result<(), &'a str> {
+pub fn parse_file(path: String) -> Result<(), parse_err::ParseErr> {
     if !Path::new(&path).exists() {
-        return Err("File doesn't exists");
+        return Err(ParseErr::FileNotExists(path.clone()));
     }
 
     let mut buf = String::new();
     File::open(path).unwrap().read_to_string(&mut buf).unwrap();
-    parse_simply(buf);
+    parse_simply(buf)?;
 
     Ok(())
 }
 
-pub fn parse_simply(code: String) {
-    ast::build_ast(code);
+pub fn parse_simply(code: String) -> Result<(), ParseErr> {
+    ast::build_ast(code)?;
+
+    Ok(())
 }

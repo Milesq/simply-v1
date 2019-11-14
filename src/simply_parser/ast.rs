@@ -1,10 +1,11 @@
 use super::{
-    AstTree, SimplyElement as El, SimplyElements, SimplyLiteralElement as Literal,
+    AstTree, ParseErr, SimplyElement as El, SimplyElements, SimplyLiteralElement as Literal,
     SimplyValue as Val,
 };
 use base64::encode;
+use regex::Regex;
 
-fn hash_literals(s: &mut String) {
+fn hash_literals(s: &mut String) -> Result<(), ParseErr> {
     let mut in_literal = false;
     let mut skip = false;
     let mut literals = Vec::new();
@@ -35,10 +36,18 @@ fn hash_literals(s: &mut String) {
     for i in (0..literals.len()).step_by(2).rev() {
         let mut tmp = String::new();
         tmp.push_str(&s[0..literals[i] + 1]);
+
+        if literals.len() == i + 1 {
+            let (line, chr) = crate::helpers::get_line(s, literals[i]);
+            return Err(ParseErr::MissingApost { line, r#char: chr });
+        }
+
         tmp.push_str(encode(&s[literals[i] + 1..literals[i + 1]]).as_str());
         tmp.push_str(&s[literals[i + 1]..]);
         *s = tmp;
     }
+
+    Ok(())
 }
 
 fn split(code: String) -> Vec<String> {
@@ -68,72 +77,71 @@ fn split(code: String) -> Vec<String> {
         .collect::<Vec<String>>()
 }
 
-pub fn build_ast(mut code: String) -> AstTree {
-    hash_literals(&mut code);
+macro_rules! r {
+    ($regexp: expr) => {
+        Regex::new($regexp).unwrap()
+    };
+}
+
+pub fn build_ast(mut code: String) -> Result<AstTree, ParseErr> {
+    let int = r!(r"^[0-9]+$");
+    let float = r!(r"^[0-9]+\.[0-9]+$");
+
+    hash_literals(&mut code)?;
+    println!("{}", code);
     let mut ast = Vec::new();
 
-    let mut action: Option<fn(&String, &SimplyElements) -> (El, bool)> = None;
-    let mut buffer: SimplyElements = Vec::new();
+    let mut action: Option<fn(&String, String) -> Result<El, String>> = None;
+    let mut buffer = String::new();
+    /*
+        for expr in split(code).iter() {
+            if let Some(func) = action {
+                let ast_element = func(&expr, buffer.clone());
 
-    for expr in split(code).iter() {
-        if let Some(func) = action {
-            let (ast_element, ended) = func(expr, &buffer);
-
-            if !ended {
-                buffer.push(ast_element);
+                match ast_element {
+                    Err(new_part) => buffer.push_str(new_part.as_str()),
+                    Ok(parsed) => {
+                        ast.push(parsed);
+                        action = None;
+                        buffer = String::new();
+                    }
+                }
             } else {
-                for el in buffer {
-                    ast.push(el);
-                }
-
-                ast.push(ast_element);
-                action = None;
-                buffer = Vec::new();
-            }
-        } else {
-            ast.push(match expr.as_str() {
-                "func" => {
-                    action = Some(|func_name, _| (El::FuncDec(func_name.to_string()), true));
-                    continue;
-                }
-                "let" => {
-                    action =
-                        Some(|var_name, _| (El::VariableDeclaration(var_name.to_string()), true));
-                    continue;
-                }
-                "if" => {
-                    action = Some(|condition, _| (El::IfStatement(condition.to_string()), true));
-                    continue;
-                }
-                "{" => El::OpeningBracket,
-                "}" => El::ClosingBracket,
-                "(" => {
-                    action = Some(|val, prevs| {
-                        if val == ")" {
-                            let filtered = prevs
-                                .iter()
-                                .filter(|el| {
-                                    if let El::Identifier(Val::Variable(name)) = el {
-                                        name != ","
-                                    } else {
-                                        true
-                                    }
-                                })
-                                .collect::<Vec<&El>>();
-                            (El::FuncInvocation(filtered), true)
+                ast.push(match expr.as_str() {
+                    "func" => {
+                        action = Some(|func_name, _| Ok(El::FuncDec(func_name.to_string())));
+                        continue;
+                    }
+                    "let" => {
+                        action = Some(|var_name, _| Ok(El::VariableDeclaration(var_name.to_string())));
+                        continue;
+                    }
+                    "if" => El::IfStatement,
+                    "{" => El::OpeningBracket,
+                    "}" => El::ClosingBracket,
+                    "(" => El::OpeningCurlyBracket,
+                    ")" => El::ClosingCurlyBracket,
+                    _ => {
+                        if int.is_match(expr) {
+                            El::Identifier(Val::Literal(Literal::IntNumber(
+                                expr.parse::<i32>().unwrap(),
+                            )))
+                        } else if float.is_match(expr) {
+                            El::Identifier(Val::Literal(Literal::FloatNumber(
+                                expr.parse::<f32>().unwrap(),
+                            )))
+                        } else if expr.get(0..1)? == "\"" {
+                            El::Identifier(Val::Literal(Literal::StringValue(expr.to_string())))
                         } else {
-                            (El::Identifier(Val::Variable(val.into())), val == ")")
+                            El::Identifier(Val::Literal(Literal::StringValue(expr.to_string())))
                         }
-                    });
-
-                    continue;
-                }
-                _ => El::Identifier(Val::Variable(expr.into())),
-            });
+                    }
+                });
+            }
         }
-    }
-
+    */
     // println!("{:#?}", ast);
 
-    ast
+
+    Ok(ast)
 }

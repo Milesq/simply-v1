@@ -16,11 +16,14 @@ pub enum SimplyValue {
 
 #[derive(Debug)]
 pub enum SimplyElement {
-    FuncDec(String),                // Func name
-    FuncInvocation(SimplyElements), // Func parameters
-    VariableDeclaration(String),    // Var name
-    Identifier(SimplyValue),        // Type
-    IfStatement(String),            // Condition
+    FuncDec(String),             // Func name
+    VariableDeclaration(String), // Var name
+    Identifier(SimplyValue),     // Type
+    IfStatement,                 // Condition
+    Operator(String),
+    OpeningCurlyBracket,
+    ClosingCurlyBracket,
+
     OpeningBracket,
     ClosingBracket,
 }
