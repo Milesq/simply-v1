@@ -26,6 +26,6 @@ fn print_error(file_name: &str, error: ParseErr) {
         MissingApost { line, r#char } => {
             println!("Missing apost on {}:{}:{}", file_name, line, r#char);
         }
-        UnsupportedElement(el) => println!("Unsupported element! {}", el),
+        UnsupportedElement(el) => println!("Unsupported element! '{}'", el),
     }
 }
