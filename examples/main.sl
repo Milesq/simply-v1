@@ -6,7 +6,7 @@ let x = 3
 
 show(x)
 
-if x > 2 {
+if x >= 2 {
     print("x is greater than two")
 }
 

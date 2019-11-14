@@ -53,11 +53,16 @@ fn hash_literals(s: &mut String) -> Result<(), ParseErr> {
     Ok(())
 }
 
+fn is_one_of(chr: char, chars: Vec<char>) -> bool {
+    chars.iter().any(|current| current == &chr)
+}
+
 fn split(code: String) -> Vec<String> {
     let mut ret = Vec::new();
     let mut tmp = String::new();
 
     let mut in_literal = false;
+    let mut is_one_expr = false;
 
     let is_alpha = |chr: &char| (*chr >= 'a' && *chr <= 'z') || (*chr >= 'A' && *chr <= 'Z');
 
@@ -66,12 +71,20 @@ fn split(code: String) -> Vec<String> {
             in_literal = !in_literal;
         }
 
-        if is_alpha(&chr) || in_literal || chr == '"' {
+        if is_one_of(chr, "+-*/%!<>=".chars().collect::<Vec<char>>()) {
+            is_one_expr = true;
+        }
+
+        if is_one_expr || is_alpha(&chr) || in_literal || chr == '"' {
             tmp.push(chr);
         } else {
             ret.push(tmp);
             ret.push(format!("{}", chr));
             tmp = String::new();
+        }
+
+        if is_one_expr {
+            is_one_expr = false;
         }
     }
 
@@ -149,7 +162,7 @@ pub fn build_ast(mut code: String) -> Result<AstTree, ParseErr> {
         }
     }
 
-    // println!("{:#?}", ast);
+    println!("{:#?}", ast);
 
     Ok(ast)
 }

@@ -1,4 +1,0 @@
-print
-show
-print
-print
