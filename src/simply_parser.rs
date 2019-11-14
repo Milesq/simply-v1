@@ -4,8 +4,8 @@ mod ast;
 mod ast_elements;
 mod parse_err;
 
-use ast_elements::*;
-use parse_err::ParseErr;
+pub use ast_elements::*;
+pub use parse_err::ParseErr;
 
 pub fn parse_file(path: String) -> Result<(), parse_err::ParseErr> {
     if !Path::new(&path).exists() {

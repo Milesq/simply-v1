@@ -10,4 +10,4 @@ if x > 2 {
     print("x is greater than two")
 }
 
-print("Hello, World)
+print("Hello, World")
