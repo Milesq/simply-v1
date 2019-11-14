@@ -5,6 +5,9 @@ use super::{
 use base64::encode;
 use regex::Regex;
 
+mod operators;
+use operators::is_operator;
+
 fn hash_literals(s: &mut String) -> Result<(), ParseErr> {
     let mut in_literal = false;
     let mut skip = false;
@@ -123,36 +126,10 @@ pub fn build_ast(mut code: String) -> Result<AstTree, ParseErr> {
                 "(" => El::OpeningCurlyBracket,
                 ")" => El::ClosingCurlyBracket,
                 "," => El::Comma,
-
-                "==" => El::Operator(Operator::IsEqual(false)),
-                "!=" => El::Operator(Operator::IsEqual(true)),
-
-                ">" => El::Operator(Operator::Greater(false)),
-                ">=" => El::Operator(Operator::Greater(true)),
-
-                "<" => El::Operator(Operator::Less(false)),
-                "<=" => El::Operator(Operator::Less(true)),
-
-                "=" => El::Operator(Operator::Assign),
-
-                "+" => El::Operator(Operator::Add(false)),
-                "+=" => El::Operator(Operator::Add(true)),
-
-                "-" => El::Operator(Operator::Subtract(false)),
-                "-=" => El::Operator(Operator::Subtract(true)),
-
-                "/" => El::Operator(Operator::Div(false)),
-                "/=" => El::Operator(Operator::Div(true)),
-
-                "*" => El::Operator(Operator::Multiply(false)),
-                "*=" => El::Operator(Operator::Multiply(true)),
-
-                "%" => El::Operator(Operator::Modulo(false)),
-                "%=" => El::Operator(Operator::Modulo(true)),
-
-                "!" => El::Operator(Operator::Negation),
                 _ => {
-                    if int.is_match(expr) {
+                    if let Some(operator) = is_operator(expr) {
+                        El::Operator(operator)
+                    } else if int.is_match(expr) {
                         El::Identifier(Val::Literal(Literal::IntNumber(
                             expr.parse::<i32>().unwrap(),
                         )))
@@ -172,7 +149,7 @@ pub fn build_ast(mut code: String) -> Result<AstTree, ParseErr> {
         }
     }
 
-    println!("{:#?}", ast);
+    // println!("{:#?}", ast);
 
     Ok(ast)
 }
