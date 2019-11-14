@@ -1,6 +1,5 @@
 use super::{
-    AstTree, ParseErr, SimplyElement as El, SimplyElements, SimplyLiteralElement as Literal,
-    SimplyValue as Val,
+    AstTree, ParseErr, SimplyElement as El, SimplyLiteralElement as Literal, SimplyValue as Val,
 };
 use base64::encode;
 use regex::Regex;
@@ -35,7 +34,7 @@ fn hash_literals(s: &mut String) -> Result<(), ParseErr> {
 
     for i in (0..literals.len()).step_by(2).rev() {
         let mut tmp = String::new();
-        tmp.push_str(&s[0..literals[i] + 1]);
+        tmp.push_str(&s[0..=literals[i]]);
 
         if literals.len() == i + 1 {
             let (line, chr) = crate::helpers::get_line(s, literals[i]);
@@ -73,7 +72,7 @@ fn split(code: String) -> Vec<String> {
     }
 
     ret.into_iter()
-        .filter(|ref x| x.trim().len() > 0)
+        .filter(|ref x| !x.trim().is_empty())
         .collect::<Vec<String>>()
 }
 
@@ -91,57 +90,57 @@ pub fn build_ast(mut code: String) -> Result<AstTree, ParseErr> {
     println!("{}", code);
     let mut ast = Vec::new();
 
-    let mut action: Option<fn(&String, String) -> Result<El, String>> = None;
+    type Action = fn(&String, String) -> Result<El, String>;
+    let mut action: Option<Action> = None;
     let mut buffer = String::new();
-    /*
-        for expr in split(code).iter() {
-            if let Some(func) = action {
-                let ast_element = func(&expr, buffer.clone());
 
-                match ast_element {
-                    Err(new_part) => buffer.push_str(new_part.as_str()),
-                    Ok(parsed) => {
-                        ast.push(parsed);
-                        action = None;
-                        buffer = String::new();
+    for expr in split(code).iter() {
+        if let Some(func) = action {
+            let ast_element = func(&expr, buffer.clone());
+
+            match ast_element {
+                Err(new_part) => buffer.push_str(new_part.as_str()),
+                Ok(parsed) => {
+                    ast.push(parsed);
+                    action = None;
+                    buffer = String::new();
+                }
+            }
+        } else {
+            ast.push(match expr.as_str() {
+                "func" => {
+                    action = Some(|func_name, _| Ok(El::FuncDec(func_name.to_string())));
+                    continue;
+                }
+                "let" => {
+                    action = Some(|var_name, _| Ok(El::VariableDeclaration(var_name.to_string())));
+                    continue;
+                }
+                "if" => El::IfStatement,
+                "{" => El::OpeningBracket,
+                "}" => El::ClosingBracket,
+                "(" => El::OpeningCurlyBracket,
+                ")" => El::ClosingCurlyBracket,
+                _ => {
+                    if int.is_match(expr) {
+                        El::Identifier(Val::Literal(Literal::IntNumber(
+                            expr.parse::<i32>().unwrap(),
+                        )))
+                    } else if float.is_match(expr) {
+                        El::Identifier(Val::Literal(Literal::FloatNumber(
+                            expr.parse::<f32>().unwrap(),
+                        )))
+                    } else if expr.get(0..1).unwrap() == "\"" {
+                        El::Identifier(Val::Literal(Literal::StringValue(expr.to_string())))
+                    } else {
+                        El::Identifier(Val::Literal(Literal::StringValue("expr".to_string())))
                     }
                 }
-            } else {
-                ast.push(match expr.as_str() {
-                    "func" => {
-                        action = Some(|func_name, _| Ok(El::FuncDec(func_name.to_string())));
-                        continue;
-                    }
-                    "let" => {
-                        action = Some(|var_name, _| Ok(El::VariableDeclaration(var_name.to_string())));
-                        continue;
-                    }
-                    "if" => El::IfStatement,
-                    "{" => El::OpeningBracket,
-                    "}" => El::ClosingBracket,
-                    "(" => El::OpeningCurlyBracket,
-                    ")" => El::ClosingCurlyBracket,
-                    _ => {
-                        if int.is_match(expr) {
-                            El::Identifier(Val::Literal(Literal::IntNumber(
-                                expr.parse::<i32>().unwrap(),
-                            )))
-                        } else if float.is_match(expr) {
-                            El::Identifier(Val::Literal(Literal::FloatNumber(
-                                expr.parse::<f32>().unwrap(),
-                            )))
-                        } else if expr.get(0..1)? == "\"" {
-                            El::Identifier(Val::Literal(Literal::StringValue(expr.to_string())))
-                        } else {
-                            El::Identifier(Val::Literal(Literal::StringValue(expr.to_string())))
-                        }
-                    }
-                });
-            }
+            });
         }
-    */
-    // println!("{:#?}", ast);
+    }
 
+    println!("{:#?}", ast);
 
     Ok(ast)
 }
