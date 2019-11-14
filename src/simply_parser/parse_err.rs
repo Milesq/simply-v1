@@ -2,4 +2,5 @@
 pub enum ParseErr {
     MissingApost { line: usize, r#char: usize },
     FileNotExists(String),
+    UnsupportedElement(String),
 }

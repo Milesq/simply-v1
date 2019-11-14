@@ -1,0 +1,4 @@
+print
+show
+print
+print

@@ -1,5 +1,6 @@
 use super::{
-    AstTree, ParseErr, SimplyElement as El, SimplyLiteralElement as Literal, SimplyValue as Val,
+    AstTree, Operator, ParseErr, SimplyElement as El, SimplyLiteralElement as Literal,
+    SimplyValue as Val,
 };
 use base64::encode;
 use regex::Regex;
@@ -85,9 +86,9 @@ macro_rules! r {
 pub fn build_ast(mut code: String) -> Result<AstTree, ParseErr> {
     let int = r!(r"^[0-9]+$");
     let float = r!(r"^[0-9]+\.[0-9]+$");
+    let ident = r!(r"[a-zA-Z]([a-zA-Z0-9]+)?");
 
     hash_literals(&mut code)?;
-    println!("{}", code);
     let mut ast = Vec::new();
 
     type Action = fn(&String, String) -> Result<El, String>;
@@ -121,6 +122,35 @@ pub fn build_ast(mut code: String) -> Result<AstTree, ParseErr> {
                 "}" => El::ClosingBracket,
                 "(" => El::OpeningCurlyBracket,
                 ")" => El::ClosingCurlyBracket,
+                "," => El::Comma,
+
+                "==" => El::Operator(Operator::IsEqual(false)),
+                "!=" => El::Operator(Operator::IsEqual(true)),
+
+                ">" => El::Operator(Operator::Greater(false)),
+                ">=" => El::Operator(Operator::Greater(true)),
+
+                "<" => El::Operator(Operator::Less(false)),
+                "<=" => El::Operator(Operator::Less(true)),
+
+                "=" => El::Operator(Operator::Assign),
+
+                "+" => El::Operator(Operator::Add(false)),
+                "+=" => El::Operator(Operator::Add(true)),
+
+                "-" => El::Operator(Operator::Subtract(false)),
+                "-=" => El::Operator(Operator::Subtract(true)),
+
+                "/" => El::Operator(Operator::Div(false)),
+                "/=" => El::Operator(Operator::Div(true)),
+
+                "*" => El::Operator(Operator::Multiply(false)),
+                "*=" => El::Operator(Operator::Multiply(true)),
+
+                "%" => El::Operator(Operator::Modulo(false)),
+                "%=" => El::Operator(Operator::Modulo(true)),
+
+                "!" => El::Operator(Operator::Negation),
                 _ => {
                     if int.is_match(expr) {
                         El::Identifier(Val::Literal(Literal::IntNumber(
@@ -132,8 +162,10 @@ pub fn build_ast(mut code: String) -> Result<AstTree, ParseErr> {
                         )))
                     } else if expr.get(0..1).unwrap() == "\"" {
                         El::Identifier(Val::Literal(Literal::StringValue(expr.to_string())))
+                    } else if ident.is_match(expr) {
+                        El::Identifier(Val::Variable(expr.to_string()))
                     } else {
-                        El::Identifier(Val::Literal(Literal::StringValue("expr".to_string())))
+                        return Err(ParseErr::UnsupportedElement(expr.to_string()));
                     }
                 }
             });

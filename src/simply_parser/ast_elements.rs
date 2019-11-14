@@ -15,17 +15,33 @@ pub enum SimplyValue {
 }
 
 #[derive(Debug)]
+pub enum Operator {
+    IsEqual(bool), // Negation
+    Greater(bool), // Or equal?
+    Less(bool),    // Or equal?
+    Assign,
+    Add(bool),      // And assign?
+    Subtract(bool), // And assign?
+    Div(bool),      // And assign?
+    Multiply(bool), // And assign?
+    Modulo(bool),   // And assign?
+    Negation,
+}
+
+#[derive(Debug)]
 pub enum SimplyElement {
     FuncDec(String),             // Func name
     VariableDeclaration(String), // Var name
     Identifier(SimplyValue),     // Type
     IfStatement,                 // Condition
-    Operator(String),
+    Operator(Operator),
     OpeningCurlyBracket,
     ClosingCurlyBracket,
 
     OpeningBracket,
     ClosingBracket,
+
+    Comma,
 }
 
 pub type SimplyElements = Vec<SimplyElement>;
