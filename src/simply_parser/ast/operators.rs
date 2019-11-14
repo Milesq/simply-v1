@@ -29,6 +29,16 @@ pub fn is_operator(fragment: &str) -> Option<Operator> {
 
         "!" => Negation,
 
+        // Binary operators
+        "~" => BinaryNegation,
+        "&&" => LogicalAnd,
+        "&" => BinaryAnd,
+
+        "||" => LogicalOr,
+        "|" => BinaryOr,
+
+        "^" => Xor,
+
         _ => return None,
     })
 }

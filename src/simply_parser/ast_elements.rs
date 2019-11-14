@@ -26,6 +26,14 @@ pub enum Operator {
     Multiply(bool), // And assign?
     Modulo(bool),   // And assign?
     Negation,
+
+    // Binary and logical
+    BinaryNegation,
+    LogicalAnd,
+    BinaryAnd,
+    LogicalOr,
+    BinaryOr,
+    Xor,
 }
 
 #[derive(Debug)]
