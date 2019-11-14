@@ -43,8 +43,12 @@ pub enum SimplyElement {
     Identifier(SimplyValue),     // Type
     IfStatement,                 // Condition
     Operator(Operator),
-    OpeningCurlyBracket,
-    ClosingCurlyBracket,
+
+    OpeningCurlyBraces,
+    ClosingCurlyBraces,
+
+    OpeningParentheses,
+    ClosingParentheses,
 
     OpeningBracket,
     ClosingBracket,

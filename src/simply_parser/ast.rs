@@ -134,10 +134,12 @@ pub fn build_ast(mut code: String) -> Result<AstTree, ParseErr> {
                     continue;
                 }
                 "if" => El::IfStatement,
-                "{" => El::OpeningBracket,
-                "}" => El::ClosingBracket,
-                "(" => El::OpeningCurlyBracket,
-                ")" => El::ClosingCurlyBracket,
+                "{" => El::OpeningCurlyBraces,
+                "}" => El::ClosingCurlyBraces,
+                "(" => El::OpeningParentheses,
+                ")" => El::ClosingParentheses,
+                "[" => El::OpeningBracket,
+                "]" => El::ClosingBracket,
                 "," => El::Comma,
                 _ => {
                     if let Some(operator) = is_operator(expr) {
