@@ -1,5 +1,5 @@
 [package]
-name = "simply"
+name = "simply_build_ast"
 version = "0.1.0"
 authors = ["Milesq <wmilosz88@gmail.com>"]
 edition = "2018"
