@@ -42,6 +42,8 @@ pub enum SimplyElement {
     VariableDeclaration(String), // Var name
     Identifier(SimplyValue),     // Type
     IfStatement,                 // Condition
+    ReturnStatement,
+    ObjectExpression,
     Operator(Operator),
 
     OpeningCurlyBraces,
@@ -54,6 +56,7 @@ pub enum SimplyElement {
     ClosingBracket,
 
     Comma,
+    Dot,
 }
 
 pub type SimplyElements = Vec<SimplyElement>;

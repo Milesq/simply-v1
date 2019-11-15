@@ -134,6 +134,8 @@ pub fn build_ast(mut code: String) -> Result<AstTree, ParseErr> {
                     continue;
                 }
                 "if" => El::IfStatement,
+                "return" => El::ReturnStatement,
+                "@" => El::ObjectExpression,
                 "{" => El::OpeningCurlyBraces,
                 "}" => El::ClosingCurlyBraces,
                 "(" => El::OpeningParentheses,
@@ -141,6 +143,7 @@ pub fn build_ast(mut code: String) -> Result<AstTree, ParseErr> {
                 "[" => El::OpeningBracket,
                 "]" => El::ClosingBracket,
                 "," => El::Comma,
+                "." => El::Dot,
                 _ => {
                     if let Some(operator) = is_operator(expr) {
                         El::Operator(operator)
