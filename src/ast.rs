@@ -167,7 +167,5 @@ pub fn build_ast(mut code: String) -> Result<AstTree, ParseErr> {
         }
     }
 
-    println!("{:#?}", ast);
-
     Ok(ast)
 }
