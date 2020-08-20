@@ -1,6 +1,6 @@
 # simply-v1
 
-## This project has been deprecaed
+## This project has been deprecaed and will be replaced
 Simply, useful language
 
 Simply was planned as simply language dedicated for everyday problems / write interactive configurations and useful scripts.
@@ -47,7 +47,7 @@ func show x
     x + 1
 
 let x = 3
-let y =
+let y = object
     q = x
     z = 0
 
@@ -82,7 +82,7 @@ if (x >= 2) {
 print("Hello, World")
 ```
 
-## Keywords explain
+## Keywords explanation
 
 ### Simply doesn't any keywords
 
